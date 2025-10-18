@@ -1,0 +1,110 @@
+<!--
+  Arquivo: index.html
+  Descrição: Página de login simples (front-end) que aceita apenas o login e senha definidos
+  Login: LMethods
+  Senha: L007007
+  Ao autenticar com sucesso, o usuário é redirecionado para:
+  https://www.roblox.com/share?code=92792b8e1ca45544bc0f6af2fc86f809&type=Server
+
+  Observações de segurança:
+  - Este código realiza a checagem apenas no cliente (JavaScript no navegador). Não é seguro para proteger conteúdo sensível.
+  - Para proteção real, implemente autenticação no servidor e não exponha credenciais no front-end.
+-->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Área Restrita — Login</title>
+  <style>
+    :root{--bg:#071021;--card:#071426;--accent:#7c3aed;--muted:#9aa4b2}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;background:linear-gradient(180deg,#041021,#071021);color:#e6eef6}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:100%;max-width:420px;background:rgba(255,255,255,0.03);padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    h1{margin:0 0 10px;font-size:22px}
+    p.sub{color:var(--muted);margin:0 0 18px}
+    label{display:block;font-size:13px;margin-top:10px;color:var(--muted)}
+    input{width:100%;padding:12px;margin-top:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .btn{display:inline-block;margin-top:16px;padding:10px 14px;border-radius:8px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:#fff;font-weight:700;cursor:pointer}
+    .msg{margin-top:12px;color:#fca5a5;font-weight:600}
+    .hint{margin-top:8px;color:var(--muted);font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main">
+      <h1>Acesso Restrito</h1>
+      <p class="sub">Faça login para continuar.</p>
+
+      <form id="loginForm" autocomplete="off" novalidate>
+        <label for="user">Usuário</label>
+        <input id="user" name="user" type="text" placeholder="Digite seu usuário" required />
+
+        <label for="pass">Senha</label>
+        <input id="pass" name="pass" type="password" placeholder="Digite sua senha" required />
+
+        <button class="btn" type="submit">Entrar</button>
+
+        <div id="message" class="msg" aria-live="polite"></div>
+        <div class="hint">Dica: esse site valida localmente. Para autenticação segura, implemente backend.</div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const TARGET_USER = 'LMethods';
+      const TARGET_PASS = 'L007007';
+      const REDIRECT_URL = 'https://www.roblox.com/share?code=92792b8e1ca45544bc0f6af2fc86f809&type=Server';
+
+      const form = document.getElementById('loginForm');
+      const userIn = document.getElementById('user');
+      const passIn = document.getElementById('pass');
+      const msg = document.getElementById('message');
+
+      // simples proteção contra tentativas rápidas
+      let attempts = 0;
+      const MAX_ATTEMPTS = 6;
+      let lockedUntil = 0;
+
+      function showMessage(text, ok){
+        msg.textContent = text;
+        msg.style.color = ok ? '#86efac' : '#fca5a5';
+      }
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(Date.now() < lockedUntil){
+          const s = Math.ceil((lockedUntil - Date.now())/1000);
+          showMessage('Bloqueado por tentativas. Tente novamente em ' + s + 's', false);
+          return;
+        }
+
+        const user = userIn.value.trim();
+        const pass = passIn.value;
+
+        if(user === TARGET_USER && pass === TARGET_PASS){
+          showMessage('Autenticado! Redirecionando...', true);
+          // pequeno delay para mostrar mensagem
+          setTimeout(()=> window.location.href = REDIRECT_URL, 800);
+          return;
+        }
+
+        attempts++;
+        if(attempts >= MAX_ATTEMPTS){
+          lockedUntil = Date.now() + 30_000; // 30 segundos
+          attempts = 0;
+          showMessage('Muitas tentativas. Bloqueado por 30 segundos.', false);
+        } else {
+          showMessage('Usuário ou senha incorretos. Tentativas: ' + attempts + '/' + MAX_ATTEMPTS, false);
+        }
+      });
+
+      // Usabilidade: enviar com Enter
+      userIn.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); passIn.focus(); } });
+      passIn.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); form.requestSubmit(); } });
+    })();
+  </script>
+</body>
+</html>
